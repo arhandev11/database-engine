@@ -1,0 +1,15 @@
+[package]
+name = "database"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bincode = "1.3.3"
+byteorder = "1.5.0"
+field_accessor = "0.5.2"
+savefile = "0.17.6"
+savefile-derive = "0.17.6"
+serde = "1.0.204"
+serde_derive = "1.0.204"
+tokio = { version = "1.38.0", features = ["full"] }
+zbus = "4.3.1"
