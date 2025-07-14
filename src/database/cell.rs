@@ -25,7 +25,7 @@ impl Cell {
                 println!("{:?}", result);
             }
             DataType::Null => {
-                println!("None");
+                println!("NULL");
             }
         }
     }

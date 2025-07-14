@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::database::{cell::Cell, column::Column, table::Table, utils};
@@ -95,4 +97,26 @@ fn bytes_to_string_array(buf_str: &mut Vec<u8>, length: usize) -> Vec<String> {
     return arr_str;
 }
 
-
+pub fn parse_new_column(column: HashMap<String, String>) -> Column {
+    let name = match column.get("name") {
+        Some(val) => val.to_owned(),
+        None => panic!("Please input key name!"),
+    };
+    let data_type = match column.get("type") {
+        Some(val) => {
+            if val == "string" {
+                DataType::String
+            } else if val == "integer" {
+                DataType::Integer
+            } else {
+                panic!("Incorrect Type")
+            }
+        }
+        None => panic!("Please input key data type!"),
+    };
+    Column {
+        name: name,
+        data_type: data_type,
+        rows: Vec::new(),
+    }
+}

@@ -8,7 +8,7 @@ use crate::database::{
     column::Column,
     schema::Schema,
     table::Table,
-    utils::{DataType, InputDataEnum},
+    utils::{parse_new_column, DataType, InputDataEnum},
 };
 
 pub struct DatabaseInterface {
@@ -17,6 +17,32 @@ pub struct DatabaseInterface {
 }
 
 impl DatabaseInterface {
+    pub fn show_databases(&self) -> Vec<String> {
+        let files = fs::read_dir("./schema");
+
+        let result: Vec<String> = match files {
+            Ok(dir) => dir
+                .map(|dir_entry| match dir_entry {
+                    Ok(file) => {
+                        let res: String = match file.file_name().to_str() {
+                            Some(name) => name.to_string(),
+                            None => {
+                                panic!("Something went Wrong")
+                            }
+                        };
+                        res
+                    }
+                    Err(_) => {
+                        panic!("Something went Wrong")
+                    }
+                })
+                .collect(),
+            Err(_) => {
+                panic!("Something went Wrong!")
+            }
+        };
+        result
+    }
     pub fn select_database(&mut self, database_name: &String) -> bool {
         let path = "schema/".to_owned() + database_name;
         let open_file = File::open(path);
@@ -97,27 +123,7 @@ impl DatabaseInterface {
             length: 0,
         };
         for column in columns {
-            let name = match column.get("name") {
-                Some(val) => val.to_owned(),
-                None => panic!("Please input key name!"),
-            };
-            let data_type = match column.get("type") {
-                Some(val) => {
-                    if val == "string" {
-                        DataType::String
-                    } else if val == "integer" {
-                        DataType::Integer
-                    } else {
-                        panic!("Incorrect Type")
-                    }
-                }
-                None => panic!("Please input key data type!"),
-            };
-            let col = Column {
-                name: name,
-                data_type: data_type,
-                rows: Vec::new(),
-            };
+            let col = parse_new_column(column);
             table.add_column(col);
         }
         match &mut self.database {
@@ -140,5 +146,160 @@ impl DatabaseInterface {
         };
 
         check_database.delete_table(table_name.to_owned())
+    }
+
+    pub fn add_column_to_table(
+        &mut self,
+        table_name: &String,
+        name: String,
+        data_type: String,
+    ) -> bool {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+
+        let mut map_column: HashMap<String, String> = HashMap::new();
+        map_column.insert("name".to_string(), name);
+        map_column.insert("type".to_string(), data_type);
+
+        let column = parse_new_column(map_column);
+
+        check_database.add_column_to_table(table_name.to_owned(), column);
+        true
+    }
+
+    pub fn list_column_on_table(&mut self, table_name: String) -> Vec<String> {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+
+        let column_names = check_database.list_column_on_table(table_name);
+        column_names
+    }
+
+    pub fn delete_column_on_table(&mut self, table_name: String, column_name: String) {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+
+        check_database.delete_column_on_table(table_name, column_name);
+    }
+
+    pub fn add_data(&mut self, table_name: &String, data: HashMap<String, String>) -> bool {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+
+        check_database.add_data(table_name.to_owned(), data);
+
+        true
+    }
+
+    pub fn get_data(&mut self, table_name: &String) -> bool {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+        let result = check_database.get_data(table_name.to_owned());
+
+        println!("{:?}", result);
+
+        true
+    }
+
+    pub fn search_data(&mut self, table_name: &String, column_name: String, value: String) -> bool {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+        let result = check_database.search_data(table_name.to_owned(), column_name, value);
+
+        println!("{:?}", result);
+
+        true
+    }
+
+    pub fn update_data(
+        &mut self,
+        table_name: &String,
+        where_data: HashMap<String, String>,
+        updated_data: HashMap<String, String>,
+    ) -> bool {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+
+        let result = check_database.update_data(table_name.to_owned(), where_data, updated_data);
+
+        println!("{:?}", result);
+
+        true
+    }
+
+    pub fn delete_data(
+        &mut self,
+        table_name: &String,
+        where_data: HashMap<String, String>,
+    ) -> bool {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+        let result = check_database.delete_data(table_name.to_owned(), where_data);
+
+        println!("{:?}", result);
+
+        true
+    }
+
+    pub fn join_table(
+        &mut self,
+        table_name: String,
+        column_name: String,
+        table_join: String,
+        column_join: String,
+    ) -> bool {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+        let result = check_database.join_table(table_name, column_name, table_join, column_join);
+
+        println!("{:?}", result);
+
+        true
+    }
+
+    pub fn print(&mut self) {
+        let check_database = match &mut self.database {
+            Some(database) => database,
+            None => {
+                panic!("Please select database first!")
+            }
+        };
+        check_database.print();
     }
 }

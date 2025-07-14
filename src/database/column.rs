@@ -43,19 +43,29 @@ impl Column {
         }
     }
 
-    pub fn insert_data(&mut self, input: InputDataEnum) {
-        let data_type = match self.data_type {
-            DataType::Integer => DataType::Integer,
-            DataType::String => DataType::String,
-            DataType::Null => DataType::Null,
-        };
+    pub fn insert_data(&mut self, input: &InputDataEnum) {
         let result = match input {
-            InputDataEnum::String(word) => utils::string_to_bytes(word),
-            InputDataEnum::Integer(number) => utils::integer_to_bytes(number).to_vec(),
+            InputDataEnum::String(word) => utils::string_to_bytes(word.to_string()),
+            InputDataEnum::Integer(number) => utils::integer_to_bytes(*number).to_vec(),
             InputDataEnum::Null => [0; (isize::BITS / 8) as usize].to_vec(),
         };
-        let new_cell = Cell {
-            data_type: data_type,
+        let new_cell: Cell = Cell {
+            data_type: self.get_data_type(),
+            data_value: result,
+        };
+        self.rows.push(new_cell);
+    }
+
+    pub fn insert_default_data(&mut self) {
+        let result = match self.data_type {
+            DataType::Integer => utils::integer_to_bytes(0).to_vec(),
+            DataType::String => utils::string_to_bytes("".to_owned()),
+            DataType::Null => {
+                panic!("Not Supported Yet!")
+            }
+        };
+        let new_cell: Cell = Cell {
+            data_type: self.get_data_type(),
             data_value: result,
         };
         self.rows.push(new_cell);
@@ -71,7 +81,30 @@ impl Column {
         self.rows[index].change_value(byte);
     }
 
-    pub fn delete_data(&mut self, index: usize) {
+    pub fn search_for_index(&self, value: String) -> Vec<usize> {
+        let mut res: Vec<usize> = Vec::new();
+        let mut index = 0;
+        for row in &self.rows {
+            match row.value() {
+                InputDataEnum::String(word) => {
+                    if value == word {
+                        res.push(index);
+                    }
+                }
+                InputDataEnum::Integer(num) => {
+                    if value.as_str().parse::<isize>().unwrap() == num {
+                        res.push(index);
+                    }
+                }
+                InputDataEnum::Null => {}
+            };
+            index += 1;
+        }
+
+        res
+    }
+
+    pub fn delete(&mut self, index: usize) {
         self.rows.remove(index);
     }
 

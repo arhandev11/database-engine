@@ -5,8 +5,10 @@ use std::{
 };
 
 use crate::database::{
+    cell::Cell,
+    column::Column,
     table::{self, Table},
-    utils::{self, bytes_to_string, InputDataEnum},
+    utils::{self, bytes_to_string, DataType, InputDataEnum},
 };
 
 pub struct Schema {
@@ -79,9 +81,49 @@ impl Schema {
         let _ = self.save();
     }
 
-    pub fn search_table(&self, name: String) -> &Table {
-        let mut selected_table: Option<&Table> = None;
-        for table in &self.tables {
+    pub fn add_column_to_table(&mut self, table_name: String, mut column: Column) -> bool {
+        let table = self.search_table(table_name);
+        match column.data_type {
+            DataType::String => {
+                column.rows = (1..=table.length)
+                    .map(|x| Cell {
+                        data_type: DataType::String,
+                        data_value: utils::string_to_bytes("".to_owned()),
+                    })
+                    .collect();
+            }
+            DataType::Integer => {
+                column.rows = (1..=table.length)
+                    .map(|x| Cell {
+                        data_type: DataType::String,
+                        data_value: utils::integer_to_bytes(0).to_vec(),
+                    })
+                    .collect();
+            }
+            DataType::Null => {}
+        }
+        table.add_column(column);
+        let _ = self.save();
+        true
+    }
+
+    pub fn list_column_on_table(&mut self, name: String) -> Vec<String> {
+        let table = self.search_table(name);
+        table.get_column_names()
+    }
+
+    pub fn delete_column_on_table(&mut self, table_name: String, column_name: String) -> bool {
+        let table = self.search_table(table_name);
+
+        table.delete_column(column_name);
+        let _ = self.save();
+
+        true
+    }
+
+    pub fn search_table(&mut self, name: String) -> &mut Table {
+        let mut selected_table: Option<&mut Table> = None;
+        for table in &mut self.tables {
             if table.name == name {
                 selected_table = Some(table);
             }
@@ -110,19 +152,61 @@ impl Schema {
     }
 
     pub fn delete_table(&mut self, table_name: String) {
-        
-        let table_index = self.check_table_index(table_name); 
+        let table_index = self.check_table_index(table_name);
 
         if table_index == -1 {
             panic!("Table not Found");
         }
-        
+
         self.tables.remove(table_index as usize);
         let _ = self.save();
     }
 
+    pub fn add_data(&mut self, table_name: String, data: HashMap<String, String>) -> bool {
+        let table = self.search_table(table_name);
+        table.add_data(data);
+        let _ = self.save();
+        true
+    }
+
+    pub fn get_data(&mut self, table_name: String) -> Vec<HashMap<String, InputDataEnum>> {
+        let table = self.search_table(table_name);
+        let result = table.get_data();
+        result
+    }
+
+    pub fn search_data(
+        &mut self,
+        table_name: String,
+        column_name: String,
+        value: String,
+    ) -> Vec<HashMap<String, InputDataEnum>> {
+        let table = self.search_table(table_name);
+        let result = table.search_by_column(column_name, value);
+        result
+    }
+
+    pub fn update_data(
+        &mut self,
+        table_name: String,
+        where_data: HashMap<String, String>,
+        updated_data: HashMap<String, String>,
+    ) -> bool {
+        let table = self.search_table(table_name);
+        let result = table.update_data(where_data, updated_data);
+        let _ = self.save();
+        result
+    }
+
+    pub fn delete_data(&mut self, table_name: String, where_data: HashMap<String, String>) -> bool {
+        let table = self.search_table(table_name);
+        let result = table.delete_data(where_data);
+        let _ = self.save();
+        result
+    }
+
     pub fn get_data_join(
-        &self,
+        &mut self,
         table_name: String,
         column_name: String,
         table_join: String,
@@ -181,8 +265,42 @@ impl Schema {
         Ok(result)
     }
 
+    pub fn join_table(
+        &mut self,
+        table_name: String,
+        column_name: String,
+        table_join: String,
+        column_join: String,
+    ) -> Vec<HashMap<String, InputDataEnum>> {
+        let selected_table = self.search_table(table_name.to_string());
+        let mut result: Vec<HashMap<String, InputDataEnum>> = selected_table.get_data();
+        let selected_join_table = self.search_table(table_join.to_string());
+
+        for item in &mut result {
+            let val = match item.get(&column_name) {
+                Some(input) => input,
+                None => panic!("Key tidak ditemukan"),
+            };
+
+            let join_result = match val {
+                InputDataEnum::String(word) => {
+                    selected_join_table.search_by_column(column_join.clone(), word.clone())
+                }
+                InputDataEnum::Integer(num) => {
+                    selected_join_table.search_by_column(column_join.clone(), num.to_string())
+                }
+                InputDataEnum::Null => Vec::new(),
+            };
+
+            for res_search in join_result {
+                item.extend(res_search)
+            }
+        }
+        result
+    }
+
     pub fn build_index(
-        &self,
+        &mut self,
         table_name: String,
         column_name: String,
         table_join: String,
@@ -219,10 +337,10 @@ impl Schema {
                 InputDataEnum::Integer(num) => {
                     selected_join_table.search_by_column(column_join.clone(), num.to_string())
                 }
-                InputDataEnum::Null => HashMap::new(),
+                InputDataEnum::Null => Vec::new(),
             };
 
-            item.extend(join_result);
+            // item.extend(join_result);
         }
 
         let result_u8: Vec<u8> = bincode::serialize(&result).unwrap();
