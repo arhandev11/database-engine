@@ -60,6 +60,7 @@ impl DatabaseInterface {
                 let parsed_schema = Schema::to_data(&mut buf);
                 self.database = Some(parsed_schema);
                 self.is_connect = true;
+                self.build_index();
                 true
             }
             Err(err) => match err.kind() {
@@ -69,10 +70,20 @@ impl DatabaseInterface {
         }
     }
 
+    fn build_index(&mut self) {
+        match &mut self.database {
+            Some(schema) => {
+                let build_index = schema.build_index();
+            }
+            None => {}
+        }
+    }
+
     pub fn create_database(&self, database_name: &String) -> bool {
-        let new_schema = Schema {
+        let mut new_schema = Schema {
             name: database_name.clone(),
             tables: Vec::new(),
+            index: HashMap::new(),
         };
         let _ = new_schema.save();
         true
@@ -137,7 +148,7 @@ impl DatabaseInterface {
         }
     }
 
-    pub fn drop_table(&mut self, table_name: &String) {
+    pub fn drop_table(&mut self, table_name: &String) -> bool {
         let check_database = match &mut self.database {
             Some(database) => database,
             None => {
@@ -145,7 +156,9 @@ impl DatabaseInterface {
             }
         };
 
-        check_database.delete_table(table_name.to_owned())
+        check_database.delete_table(table_name.to_owned());
+
+        true
     }
 
     pub fn add_column_to_table(
@@ -183,7 +196,7 @@ impl DatabaseInterface {
         column_names
     }
 
-    pub fn delete_column_on_table(&mut self, table_name: String, column_name: String) {
+    pub fn delete_column_on_table(&mut self, table_name: String, column_name: String) -> bool {
         let check_database = match &mut self.database {
             Some(database) => database,
             None => {
@@ -192,6 +205,7 @@ impl DatabaseInterface {
         };
 
         check_database.delete_column_on_table(table_name, column_name);
+        true
     }
 
     pub fn add_data(&mut self, table_name: &String, data: HashMap<String, String>) -> bool {
@@ -207,7 +221,7 @@ impl DatabaseInterface {
         true
     }
 
-    pub fn get_data(&mut self, table_name: &String) -> bool {
+    pub fn get_data(&mut self, table_name: &String) -> Vec<HashMap<String, InputDataEnum>> {
         let check_database = match &mut self.database {
             Some(database) => database,
             None => {
@@ -216,9 +230,8 @@ impl DatabaseInterface {
         };
         let result = check_database.get_data(table_name.to_owned());
 
-        println!("{:?}", result);
-
-        true
+        let res = vec![];
+        res
     }
 
     pub fn search_data(&mut self, table_name: &String, column_name: String, value: String) -> bool {
@@ -279,6 +292,7 @@ impl DatabaseInterface {
         column_name: String,
         table_join: String,
         column_join: String,
+        join_type: String,
     ) -> bool {
         let check_database = match &mut self.database {
             Some(database) => database,
@@ -286,7 +300,32 @@ impl DatabaseInterface {
                 panic!("Please select database first!")
             }
         };
-        let result = check_database.join_table(table_name, column_name, table_join, column_join);
+
+        let key = format!(
+            "{}_{}_{}_{}",
+            table_name, column_name, table_join, column_join
+        );
+
+        match check_database.index.get(&key) {
+            Some(_) => {
+                // panic!("Index Saved")
+            }
+            None => {
+                let result = check_database.get_join_table(
+                    table_name,
+                    column_name,
+                    table_join,
+                    column_join,
+                    join_type,
+                );
+                let _ = check_database.save_index(key.clone(), result);
+            }
+        };
+
+        let result = match check_database.index.get(&key) {
+            Some(val) => val,
+            None => &vec![],
+        };
 
         println!("{:?}", result);
 

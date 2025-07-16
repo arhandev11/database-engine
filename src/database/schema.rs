@@ -14,6 +14,7 @@ use crate::database::{
 pub struct Schema {
     pub name: String,
     pub tables: Vec<Table>,
+    pub index: HashMap<String, Vec<HashMap<String, InputDataEnum>>>,
 }
 
 impl Schema {
@@ -62,14 +63,23 @@ impl Schema {
             tables.push(new_col);
         }
 
-        Schema { name, tables }
+        let mut schema = Schema {
+            name,
+            tables,
+            index: HashMap::new(),
+        };
+
+        schema.build_index();
+
+        schema
     }
 
-    pub fn save(&self) -> std::io::Result<()> {
+    pub fn save(&mut self) -> std::io::Result<()> {
         let path: String = "schema/".to_owned() + &self.name;
         let mut file = File::create(path)?;
         let buf_result = self.to_bytes();
         file.write_all(&buf_result)?;
+        self.clear_index();
         Ok(())
     }
 
@@ -205,64 +215,23 @@ impl Schema {
         result
     }
 
-    pub fn get_data_join(
+    pub fn get_join_table(
         &mut self,
         table_name: String,
         column_name: String,
         table_join: String,
         column_join: String,
-    ) -> std::io::Result<Vec<HashMap<String, InputDataEnum>>> {
-        // Reading Index File
-        let mut index_file = self.get_file("index".to_string());
-        let mut buf = Vec::new();
-
-        let read_res = index_file.read_to_end(&mut buf);
-        match read_res {
-            Ok(_) => (),
-            Err(err) => {
-                panic!("Error: {:?}", err)
+        join_type: String,
+    ) -> Vec<HashMap<String, InputDataEnum>> {
+        let result: Vec<HashMap<String, InputDataEnum>> = match join_type.as_str() {
+            "inner" => self.join_inner_table(table_name, column_name, table_join, column_join),
+            "left" => self.join_table(table_name, column_name, table_join, column_join),
+            "right" => self.join_table(table_join, column_join, table_name, column_name),
+            _ => {
+                panic!("Invalid Join Type")
             }
         };
-
-        // If file empty then assign an empty map
-        let decoded: HashMap<String, Vec<u8>>;
-        if buf.len() == 0 {
-            decoded = HashMap::new();
-        } else {
-            decoded = bincode::deserialize(&buf[..]).unwrap();
-        }
-
-        let result_data_u8 = decoded.get(
-            format!(
-                "{}_{}_{}_{}",
-                table_name, column_name, table_join, column_join
-            )
-            .as_str(),
-        );
-
-        // Checking key exists, if exists then return in, if not then build index
-        let result: Vec<HashMap<String, InputDataEnum>> = match result_data_u8 {
-            Some(vec_u8) => {
-                let decoded_result: Vec<HashMap<String, InputDataEnum>> =
-                    bincode::deserialize(&vec_u8[..]).unwrap();
-                decoded_result
-            }
-            None => {
-                let result = self.build_index(
-                    table_name.to_string(),
-                    column_name.to_string(),
-                    table_join.to_string(),
-                    column_join.to_string(),
-                );
-                match result {
-                    Ok(data) => data,
-                    Err(err) => {
-                        panic!("Error building index: {}", err)
-                    }
-                }
-            }
-        };
-        Ok(result)
+        result
     }
 
     pub fn join_table(
@@ -273,10 +242,70 @@ impl Schema {
         column_join: String,
     ) -> Vec<HashMap<String, InputDataEnum>> {
         let selected_table = self.search_table(table_name.to_string());
-        let mut result: Vec<HashMap<String, InputDataEnum>> = selected_table.get_data();
+        let mut left_join: Vec<HashMap<String, InputDataEnum>> = selected_table.get_data();
         let selected_join_table = self.search_table(table_join.to_string());
 
-        for item in &mut result {
+        let mut result: Vec<HashMap<String, InputDataEnum>> = Vec::new();
+
+        for item in &mut left_join {
+            let val = match item.get(&column_name) {
+                Some(input) => input,
+                None => panic!("Key tidak ditemukan"),
+            };
+
+            let join_result = match val {
+                InputDataEnum::String(word) => {
+                    selected_join_table.search_by_column(column_join.clone(), word.clone())
+                }
+                InputDataEnum::Integer(num) => {
+                    selected_join_table.search_by_column(column_join.clone(), num.to_string())
+                }
+                InputDataEnum::Null => Vec::new(),
+            };
+
+            let mut res: HashMap<String, InputDataEnum> = HashMap::new();
+            match join_result.first() {
+                Some(item) => {
+                    for (k, v) in item {
+                        let value = match v {
+                            InputDataEnum::Integer(num) => InputDataEnum::Integer(*num),
+                            InputDataEnum::String(word) => InputDataEnum::String(word.to_string()),
+                            InputDataEnum::Null => InputDataEnum::Null,
+                        };
+                        res.insert(k.to_string(), value);
+                    }
+                }
+                None => {}
+            }
+
+            for (k, v) in item {
+                let value = match v {
+                    InputDataEnum::Integer(num) => InputDataEnum::Integer(*num),
+                    InputDataEnum::String(word) => InputDataEnum::String(word.to_string()),
+                    InputDataEnum::Null => InputDataEnum::Null,
+                };
+                res.insert(k.to_string(), value);
+            }
+            result.push(res);
+        }
+
+        result
+    }
+
+    pub fn join_inner_table(
+        &mut self,
+        table_name: String,
+        column_name: String,
+        table_join: String,
+        column_join: String,
+    ) -> Vec<HashMap<String, InputDataEnum>> {
+        let selected_table = self.search_table(table_name.to_string());
+        let left_join: Vec<HashMap<String, InputDataEnum>> = selected_table.get_data();
+        let selected_join_table = self.search_table(table_join.to_string());
+
+        let mut result: Vec<HashMap<String, InputDataEnum>> = Vec::new();
+
+        for item in &left_join {
             let val = match item.get(&column_name) {
                 Some(input) => input,
                 None => panic!("Key tidak ditemukan"),
@@ -293,13 +322,67 @@ impl Schema {
             };
 
             for res_search in join_result {
-                item.extend(res_search)
+                let mut res: HashMap<String, InputDataEnum> = HashMap::new();
+                for (k, v) in res_search {
+                    res.insert(k, v);
+                }
+                for (k, v) in item {
+                    let value = match v {
+                        InputDataEnum::Integer(num) => InputDataEnum::Integer(*num),
+                        InputDataEnum::String(word) => InputDataEnum::String(word.to_string()),
+                        InputDataEnum::Null => InputDataEnum::Null,
+                    };
+                    res.insert(k.to_string(), value);
+                }
+                result.push(res);
             }
         }
+
         result
     }
 
-    pub fn build_index(
+    pub fn build_index(&mut self) {
+        let index_file_name: String = "index/".to_owned() + &self.name;
+        let mut file = Schema::get_file(index_file_name);
+        let mut buf = Vec::new();
+        file.read_to_end(&mut buf);
+
+        // If file empty then assign an empty map
+        let decoded_index: HashMap<String, Vec<HashMap<String, InputDataEnum>>>;
+        if buf.len() == 0 {
+            decoded_index = HashMap::new();
+        } else {
+            decoded_index = bincode::deserialize(&buf[..]).unwrap();
+        }
+        self.index = decoded_index;
+    }
+
+    pub fn save_index(
+        &mut self,
+        key: String,
+        result: Vec<HashMap<String, InputDataEnum>>,
+    ) -> std::io::Result<()> {
+        let index_file_name: String = "index/".to_owned() + &self.name;
+        let mut file = File::create(index_file_name)?;
+        // If file empty then assign an empty map
+        self.index.insert(key.clone(), result);
+        let index_u8: Vec<u8> = bincode::serialize(&self.index).unwrap();
+        file.write_all(&index_u8)?;
+        Ok(())
+    }
+
+    pub fn clear_index(&mut self) -> std::io::Result<()> {
+        let index_file_name: String = "index/".to_owned() + &self.name;
+        let mut file = File::create(index_file_name)?;
+        // If file empty then assign an empty map
+        let decoded_index: HashMap<String, Vec<HashMap<String, InputDataEnum>>> = HashMap::new();
+        let index_u8: Vec<u8> = bincode::serialize(&decoded_index).unwrap();
+        file.write_all(&index_u8)?;
+        self.index = decoded_index;
+        Ok(())
+    }
+
+    pub fn build_index_old(
         &mut self,
         table_name: String,
         column_name: String,
@@ -376,7 +459,7 @@ impl Schema {
         table_names
     }
 
-    fn get_file(&self, name: String) -> File {
+    fn get_file(name: String) -> File {
         let read_file_res = File::open(name.as_str());
         let file = match read_file_res {
             Ok(read_file) => read_file,

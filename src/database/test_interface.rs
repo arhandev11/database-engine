@@ -494,11 +494,11 @@ impl TestDatabaseInterface {
             false => println!("Database tidak ditemukan"),
         };
         db_interface.join_table(
-            "posts".to_string(),
-            "user_id".to_string(),
             "users".to_string(),
             "id".to_string(),
+            "posts".to_string(),
+            "user_id".to_string(),
+            "right".to_string(),
         );
     }
 }
-
