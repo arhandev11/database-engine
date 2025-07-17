@@ -9,7 +9,7 @@ use std::{
 use crate::database::utils::{self, DataType, InputDataEnum};
 
 pub struct Cell {
-    pub data_type: utils::DataType,
+    pub data_type: DataType,
     pub data_value: Vec<u8>,
 }
 

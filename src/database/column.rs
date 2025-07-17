@@ -108,7 +108,6 @@ impl Column {
         self.rows.remove(index);
     }
 
-    fn extract_data(&mut self) {}
 
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut result: Vec<u8> = Vec::new();

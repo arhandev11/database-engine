@@ -110,7 +110,14 @@ impl TestDatabaseInterface {
         };
         let columns = vec![];
         let res_tables = db_interface.create_table(&table_name, columns);
-        println!("{:?}", res_tables);
+        match res_tables {
+            true => {
+                println!("Berhasil membuat tabel")
+            }
+            _ => {
+                panic!("Something went wrong")
+            }
+        };
     }
 
     pub fn test_create_table_with_column(database_name: String, table_name: String) {
@@ -176,7 +183,15 @@ impl TestDatabaseInterface {
             false => println!("Database tidak ditemukan"),
         };
 
-        db_interface.add_column_to_table(&table_name, name, data_type);
+        let res = db_interface.add_column_to_table(&table_name, name, data_type);
+        match res {
+            true => {
+                println!("Berhasil membuat column")
+            }
+            _ => {
+                panic!("Something went wrong")
+            }
+        };
     }
 
     pub fn test_list_column_on_table(database_name: String, table_name: String) {
@@ -230,7 +245,15 @@ impl TestDatabaseInterface {
             false => println!("Database tidak ditemukan"),
         };
 
-        let _ = db_interface.add_data(&table_name, data);
+        let res = db_interface.add_data(&table_name, data);
+        match res {
+            true => {
+                println!("Berhasil membuat data")
+            }
+            _ => {
+                panic!("Something went wrong")
+            }
+        };
     }
 
     pub fn test_get_data(database_name: String, table_name: String) {
@@ -270,7 +293,12 @@ impl TestDatabaseInterface {
         db_interface.search_data(&table_name, column_name, value);
     }
 
-    pub fn test_update_data(database_name: String, table_name: String) {
+    pub fn test_update_data(
+        database_name: String,
+        table_name: String,
+        where_data: HashMap<String, String>,
+        updated_data: HashMap<String, String>,
+    ) {
         let mut db_interface = DatabaseInterface {
             is_connect: false,
             database: None,
@@ -283,20 +311,20 @@ impl TestDatabaseInterface {
             false => println!("Database tidak ditemukan"),
         };
 
-        let where_data = HashMap::from([
-            ("first_name".to_string(), "Daffa".to_string()),
-            ("last_name".to_string(), "Haryadi".to_string()),
-        ]);
-
-        let updated_data = HashMap::from([
-            ("id".to_string(), "10000".to_string()),
-            ("last_name".to_string(), "HUHU".to_string()),
-        ]);
-
-        db_interface.update_data(&table_name, where_data, updated_data);
+        let res = db_interface.update_data(&table_name, where_data, updated_data);
+        match res {
+            true => {
+                println!("Berhasil mengubah data")
+            }
+            false => panic!("Gagal mengubah data"),
+        };
     }
 
-    pub fn test_delete_data(database_name: String, table_name: String) {
+    pub fn test_delete_data(
+        database_name: String,
+        table_name: String,
+        where_data: HashMap<String, String>,
+    ) {
         let mut db_interface = DatabaseInterface {
             is_connect: false,
             database: None,
@@ -309,12 +337,13 @@ impl TestDatabaseInterface {
             false => println!("Database tidak ditemukan"),
         };
 
-        let where_data = HashMap::from([
-            ("first_name".to_string(), "Farhan".to_string()),
-            ("last_name".to_string(), "Abdul".to_string()),
-        ]);
-
-        db_interface.delete_data(&table_name, where_data);
+        let res = db_interface.delete_data(&table_name, where_data);
+        match res {
+            true => {
+                println!("Berhasil menghapus data")
+            }
+            false => panic!("Gagal menghapus data"),
+        };
     }
 
     pub fn test_create_join_data() {
@@ -401,67 +430,67 @@ impl TestDatabaseInterface {
                 ("id".to_string(), "0".to_string()),
                 ("user_id".to_string(), "0".to_string()),
                 ("title".to_string(), "Judul 0".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Maxime fugit voluptatem dolor et qui voluptate. Atque veritatis velit modi reiciendis rerum. Magni voluptate laudantium ipsam est vero expedita aspernatur cum. Quas neque dolores sapiente sequi et velit quia sapiente.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "1".to_string()),
                 ("user_id".to_string(), "0".to_string()),
                 ("title".to_string(), "Judul 1".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Consequatur aut deserunt libero voluptas beatae recusandae excepturi libero. Quas dolorem impedit et deserunt. Consequuntur expedita ipsam delectus qui consequuntur sunt dolorem.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "2".to_string()),
                 ("user_id".to_string(), "1".to_string()),
                 ("title".to_string(), "Judul 2".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Sed architecto consequuntur rerum beatae. Inventore et porro ullam omnis eos nam sit id. Provident ducimus explicabo sed nostrum quia laudantium quia.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "3".to_string()),
                 ("user_id".to_string(), "2".to_string()),
                 ("title".to_string(), "Judul 3".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Ut quo aut debitis totam. Et laborum aperiam et maiores est doloremque ut hic. Quo et nesciunt reprehenderit velit.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "4".to_string()),
                 ("user_id".to_string(), "2".to_string()),
                 ("title".to_string(), "Judul 4".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Harum quo iste illo quaerat. Omnis aliquid deleniti magnam optio. Fuga sint vitae rerum harum. Eum quae laboriosam dolorem distinctio quidem corrupti.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "5".to_string()),
                 ("user_id".to_string(), "2".to_string()),
                 ("title".to_string(), "Judul 5".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Ut et eos eos suscipit. Cum exercitationem aut aperiam illum. Iure iste sit illo recusandae est.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "6".to_string()),
                 ("user_id".to_string(), "3".to_string()),
                 ("title".to_string(), "Judul 6".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Totam quidem cum reprehenderit rerum et consequatur soluta. Repudiandae dolores assumenda sed ex quo. Aspernatur quis perspiciatis omnis tempore optio fugiat. Maiores expedita quaerat odit minus nulla. Et reprehenderit repellendus eos temporibus reprehenderit nam libero.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "7".to_string()),
                 ("user_id".to_string(), "2".to_string()),
                 ("title".to_string(), "Judul 7".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Tenetur libero dolorem voluptatem incidunt laudantium. Doloremque rem ut autem itaque nihil labore itaque. Ipsa vel voluptate sint expedita.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "8".to_string()),
                 ("user_id".to_string(), "2".to_string()),
                 ("title".to_string(), "Judul 8".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Et minima ex tempore voluptatem aliquam et quibusdam. Odit illum quam nemo eveniet. Illum laborum quos atque sapiente aut at. Voluptatem explicabo et sit pariatur laborum consequatur.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "9".to_string()),
                 ("user_id".to_string(), "2".to_string()),
                 ("title".to_string(), "Judul 9".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Et possimus eum aliquam. Sit molestiae recusandae itaque odio eius. Facilis asperiores minima enim atque et harum. Nostrum voluptatem voluptas esse ut voluptatem omnis repudiandae culpa. Officia dolore quia facilis culpa.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "10".to_string()),
                 ("user_id".to_string(), "1".to_string()),
                 ("title".to_string(), "Judul 10".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Cum et autem ut laudantium eum quas. Veritatis molestias aliquam est ut labore voluptas omnis. At velit consequatur perferendis porro voluptas autem.".to_string()),
             ]),
             HashMap::from([
                 ("id".to_string(), "11".to_string()),
@@ -473,7 +502,7 @@ impl TestDatabaseInterface {
                 ("id".to_string(), "12".to_string()),
                 ("user_id".to_string(), "2".to_string()),
                 ("title".to_string(), "Judul 12".to_string()),
-                ("description".to_string(), "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Minus voluptatem vel excepturi eos! Consectetur, reprehenderit harum dolor sed pariatur reiciendis non minima possimus quaerat numquam deleniti consequatur placeat aliquid rem.".to_string()),
+                ("description".to_string(), "Aut sunt excepturi facere a at molestiae recusandae sed. Rerum rerum occaecati expedita magnam aut voluptas modi. Dolorem laboriosam asperiores itaque voluptatum impedit. Ad velit velit aperiam molestiae nemo ut.".to_string()),
             ]),
         ];
         for item in data {
@@ -481,7 +510,14 @@ impl TestDatabaseInterface {
         }
     }
 
-    pub fn test_get_join_data(database_name: String) {
+    pub fn test_join_table(
+        database_name: String,
+        table_name: String,
+        column_name: String,
+        table_join: String,
+        column_join: String,
+        join_type: String,
+    ) {
         let mut db_interface = DatabaseInterface {
             is_connect: false,
             database: None,
@@ -493,12 +529,6 @@ impl TestDatabaseInterface {
             }
             false => println!("Database tidak ditemukan"),
         };
-        db_interface.join_table(
-            "users".to_string(),
-            "id".to_string(),
-            "posts".to_string(),
-            "user_id".to_string(),
-            "right".to_string(),
-        );
+        db_interface.join_table(table_name, column_name, table_join, column_join, join_type);
     }
 }

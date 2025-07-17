@@ -103,14 +103,16 @@ impl DatabaseInterface {
                     }
                     None => {}
                 };
-                true
+                let path_index = "index/".to_owned() + database_name;
+                let result = fs::remove_file(path_index);
+                match result {
+                    Ok(_) => true,
+                    Err(_) => false,
+                }
             }
             Err(_) => false,
         }
     }
-
-    // TODO
-    pub fn show_database() {}
 
     pub fn list_all_table(&self) -> Vec<String> {
         let check_database = match &self.database {
@@ -120,7 +122,7 @@ impl DatabaseInterface {
             }
         };
 
-        check_database.get_table_list_array_string()
+        check_database.list_all_table()
     }
 
     pub fn create_table(
@@ -139,7 +141,7 @@ impl DatabaseInterface {
         }
         match &mut self.database {
             Some(database) => {
-                database.add_table(table);
+                database.create_table(table);
                 true
             }
             None => {
@@ -156,7 +158,7 @@ impl DatabaseInterface {
             }
         };
 
-        check_database.delete_table(table_name.to_owned());
+        check_database.drop_table(table_name.to_owned());
 
         true
     }
@@ -229,12 +231,16 @@ impl DatabaseInterface {
             }
         };
         let result = check_database.get_data(table_name.to_owned());
-
-        let res = vec![];
-        res
+        println!("{:?}", result);
+        result
     }
 
-    pub fn search_data(&mut self, table_name: &String, column_name: String, value: String) -> bool {
+    pub fn search_data(
+        &mut self,
+        table_name: &String,
+        column_name: String,
+        value: String,
+    ) -> Vec<HashMap<String, InputDataEnum>> {
         let check_database = match &mut self.database {
             Some(database) => database,
             None => {
@@ -244,8 +250,7 @@ impl DatabaseInterface {
         let result = check_database.search_data(table_name.to_owned(), column_name, value);
 
         println!("{:?}", result);
-
-        true
+        result
     }
 
     pub fn update_data(
@@ -293,7 +298,7 @@ impl DatabaseInterface {
         table_join: String,
         column_join: String,
         join_type: String,
-    ) -> bool {
+    ) {
         let check_database = match &mut self.database {
             Some(database) => database,
             None => {
@@ -302,8 +307,8 @@ impl DatabaseInterface {
         };
 
         let key = format!(
-            "{}_{}_{}_{}",
-            table_name, column_name, table_join, column_join
+            "{}_{}_{}_{}_{}",
+            table_name, column_name, table_join, column_join, join_type
         );
 
         match check_database.index.get(&key) {
@@ -311,7 +316,7 @@ impl DatabaseInterface {
                 // panic!("Index Saved")
             }
             None => {
-                let result = check_database.get_join_table(
+                let result = check_database.join_table(
                     table_name,
                     column_name,
                     table_join,
@@ -329,7 +334,6 @@ impl DatabaseInterface {
 
         println!("{:?}", result);
 
-        true
     }
 
     pub fn print(&mut self) {

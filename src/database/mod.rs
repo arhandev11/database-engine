@@ -5,3 +5,4 @@ pub mod schema;
 pub mod table;
 pub mod test_interface;
 pub mod utils;
+pub mod database_connection;
