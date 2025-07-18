@@ -20,43 +20,6 @@ use zbus::{interface, Connection, Result};
 mod database;
 
 #[test]
-fn test_dev() {
-    // TestDatabaseInterface::test_show_database();
-    // TestDatabaseInterface::test_create_database("articles".to_string());
-    // TestDatabaseInterface::test_select_database("articles".to_string());
-    // TestDatabaseInterface::test_drop_database("test-1".to_string());
-    // TestDatabaseInterface::test_create_table_with_column("articles".to_string(), "users".to_string());
-    // TestDatabaseInterface::test_create_table_with_column("articles".to_string(), "posts".to_string());
-    // TestDatabaseInterface::test_drop_table("Test 2".to_string(), "table_1".to_string());
-    // TestDatabaseInterface::test_list_table("Test 2".to_string());
-    // TestDatabaseInterface::test_add_column(
-    //     "Test 2".to_string(),
-    //     "table_1".to_string(),
-    //     "text_aja".to_string(),
-    //     "string".to_string(),
-    // );
-    // TestDatabaseInterface::test_list_column_on_table("Test 2".to_string(), "table_1".to_string());
-    // TestDatabaseInterface::test_delete_column_on_table(
-    //     "Test 2".to_string(),
-    //     "table_1".to_string(),
-    //     "text_aja".to_string(),
-    // );
-    // TestDatabaseInterface::test_list_column_on_table("Test 2".to_string(), "table_1".to_string());
-    // TestDatabaseInterface::test_add_data("Test 2".to_string(), "table_1".to_string());
-    // TestDatabaseInterface::test_get_data("Test 2".to_string(), "table_1".to_string());
-    // TestDatabaseInterface::test_search_data(
-    //     "Test 2".to_string(),
-    //     "table_1".to_string(),
-    //     "first_name".to_string(),
-    //     "Akbar".to_string(),
-    // );
-    // TestDatabaseInterface::test_delete_data("Test 2".to_string(), "table_1".to_string());
-
-    // TestDatabaseInterface::test_update_data("articles".to_string(), "users".to_string());
-    // TestDatabaseInterface::test_create_join_data();
-    // TestDatabaseInterface::test_get_join_data("articles".to_string());
-    // TestDatabaseInterface::print("articles".to_string());
-}
 
 #[test]
 fn test() {
@@ -281,3 +244,17 @@ async fn main() -> Result<()> {
         pending::<()>().await;
     }
 }
+
+
+// DAFTAR PUSTAKA CODE / REFERENSI YANG DIGUNAKAN DALAM CODE
+// https://stackoverflow.com/questions/28127165/how-to-convert-struct-to-u8
+// https://stackoverflow.com/questions/42499049/how-to-transmute-a-u8-buffer-to-struct-in-rust
+// https://stackoverflow.com/questions/25410028/how-to-read-a-struct-from-a-file-in-rust
+// https://stackoverflow.com/questions/66922989/convert-a-struct-to-byte-array-and-back-in-rust
+// https://stackoverflow.com/questions/59600739/access-struct-field-by-variable
+// https://curriculumresources.edu.gh/wp-content/uploads/2024/10/Computing-Section-1_-TV.pdf
+// https://users.rust-lang.org/t/returning-different-types-in-match-arms/73508
+// https://doc.rust-lang.org/reference/items/enumerations.html
+// https://users.rust-lang.org/t/intersection-of-hashsets/32351/2
+// https://stackoverflow.com/questions/65862510/why-am-i-getting-a-bad-file-descriptor-error-when-writing-file-in-rust
+// https://docs.python.org/3/tutorial/datastructures.html#dictionaries
