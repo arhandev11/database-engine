@@ -1,0 +1,10 @@
+[
+  {
+    "id_crawling": 1,
+    "start_urls": "https://fnn.co.id/",
+    "keyword": "",
+    "total_page": 18510,
+    "duration_crawl": "6:00:10",
+    "created_at": "2024-02-04 16:21:31"
+  }
+]
