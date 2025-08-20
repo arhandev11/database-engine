@@ -1,0 +1,51 @@
+%!TEX root = ../main.tex
+%-------------------------------------------------------------------------------
+%                          BAB V
+%               		KESIMPULAN DAN SARAN
+%-------------------------------------------------------------------------------
+
+\chapter{KESIMPULAN DAN SARAN}
+
+\section{Kesimpulan}
+
+Berdasarkan hasil implementasi dan pengujian yang sudah dijalankan maka terdapat beberapa kesimpulan sebagai berikut:
+
+\begin{enumerate}
+	\item Untuk membuat \emph{database engine} yang menjaga integritas data, maka harus memikirkan bagaimana cara
+	database tersebut disimpan pada \emph{filesystem}. Jenis data yang disimpan juga harus dipikirkan untuk memastikan
+	data yang telah berubah menjadi \emph{byte} dapat kembali menjadi nilai asli dan tipe aslinya walaupun pada fitur saat ini 
+	masih memiliki keterbatasan dalam pengembalian datanya.
+	\item Penyimpanan data pada \emph{filesystem} harus konsisten agar tidak terdapat data yang hilang. Karena berbeda 1 urutan saja
+	dapat menghancurkan data-data yang tersimpan diurutan lainnya.
+	\item Fitur-fitur untuk mengolah data yang disimpan pada \emph{filesystem} dapat dikelola oleh atribut dan \emph{method}
+	pada bahasa pemrograman yang digunakan. Sehingga harus mempertimbangkan \emph{method} yang mana saja yang dapat di akses oleh \emph{client}.
+	\item Tipe data yang terdapat pada \emph{database} harus kompatibel untuk berbagai bahasa untuk memastikan antara server dan\emph{client}dapat saling
+	tukar menukar data.
+	\item Implementasi algoritma sinkronisasi sangat memungkinkan untuk diterapkan di dalam sistem \emph{database} karena alur awal penerimaan data sampai
+	penyimpanan data dapat dilihat secara langsung. Tak hanya algoritma, metode penyimpanan pada \emph{filesystem} dan \emph{index} juga bisa lebih dikembangkan lagi
+	untuk mencari performa yang paling optimal.
+	\item Penanganan penyimpanan data untuk bahasa non latin memiliki tahapan yang berbeda dikarenakan cara yang diterapkan pada saat ini
+	masih belum berhasil.
+\end{enumerate}
+
+\section{Saran}
+
+Berdasarkan hasil implementasi dan pengujian yang sudah dijalankan, terdapat beberapa saran untuk menyempurnakan \emph{database engine} di kemudian hari, yaitu:
+
+\begin{enumerate}
+	\item Mencoba memperbaiki kekurangan pada \emph{database engine} sesuai dengan yang dibahas pada sub bab 4.2.4. Tujuannya adalah agar \emph{database engine} yang telah dibuat 
+	saat ini dapat diimplementasikan pada sistem lain yang sudah berjalan.
+	\item Mengimplementasikan fitur distribusi \emph{database}, agar dapat segera digunakan pada sistem \emph{crawling} untuk \emph{search engine}. Salah satu langkah utamanya
+	adalah dengan mencari algoritma sinkronisasi yang paling optimal dan efisien yang dapat diterapkan pada \emph{database engine} saat ini.
+	\item Implementasikan lebih dalam fitur-fitur koneksi yang ada pada D-Bus agar komunikasi ke \emph{client} dapat berjalan lebih baik.
+	\item Sebelum melanjutkan pengembangan \emph{database}, sangat disarankan untuk mempelajari konsep dan paradigma yang ada di bahasa pemrograman rust agar dapat mengimplementasikan
+	fitur-fitur lain menjadi lebih baik ke depannya.
+\end{enumerate}
+
+
+% Baris ini digunakan untuk membantu dalam melakukan sitasi
+% Karena diapit dengan comment, maka baris ini akan diabaikan
+% oleh compiler LaTeX.
+\begin{comment}
+\bibliography{daftar-pustaka}
+\end{comment}

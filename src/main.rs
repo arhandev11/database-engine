@@ -573,10 +573,7 @@ async fn main() -> Result<()> {
 
 // DAFTAR PUSTAKA CODE / REFERENSI YANG DIGUNAKAN DALAM CODE
 // https://stackoverflow.com/questions/28127165/how-to-convert-struct-to-u8
-// https://stackoverflow.com/questions/42499049/how-to-transmute-a-u8-buffer-to-struct-in-rust
-// https://stackoverflow.com/questions/25410028/how-to-read-a-struct-from-a-file-in-rust
 // https://stackoverflow.com/questions/66922989/convert-a-struct-to-byte-array-and-back-in-rust
-// https://stackoverflow.com/questions/59600739/access-struct-field-by-variable
 // https://curriculumresources.edu.gh/wp-content/uploads/2024/10/Computing-Section-1_-TV.pdf
 // https://users.rust-lang.org/t/returning-different-types-in-match-arms/73508
 // https://doc.rust-lang.org/reference/items/enumerations.html

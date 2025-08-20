@@ -30,6 +30,7 @@ impl Cell {
         }
     }
 
+    // https://users.rust-lang.org/t/returning-different-types-in-match-arms/73508/3
     pub fn value(&self) -> InputDataEnum {
         match self.data_type {
             DataType::String => InputDataEnum::String(utils::bytes_to_string(self.data_value.clone())),
